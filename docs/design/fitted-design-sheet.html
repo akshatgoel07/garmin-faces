@@ -1,5 +1,5 @@
 <title>Fitted</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400;500&family=Outfit:wght@100..900&family=Manrope:wght@200..800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400;500&family=Outfit:wght@100..900&family=Manrope:wght@200..800&family=Figtree:wght@300..900&display=swap">
 <style>
   :root {
     --bg: #f3f2ee;
@@ -73,7 +73,7 @@
   .spec dt { color: var(--muted); }
   .spec dd { margin: 0; }
   .load { display: inline-flex; align-items: center; gap: 8px; }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill { display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
   .pill.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
   .pill.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
 
@@ -122,9 +122,10 @@
   <div class="controls">
     <div class="control"><span>Type</span>
       <div class="seg" id="fontSeg">
-        <button data-font="Geist" aria-pressed="true">Geist</button>
-        <button data-font="Outfit" aria-pressed="false">Outfit</button>
+        <button data-font="Outfit" aria-pressed="true">Outfit</button>
+        <button data-font="Geist" aria-pressed="false">Geist</button>
         <button data-font="Manrope" aria-pressed="false">Manrope</button>
+        <button data-font="Figtree" aria-pressed="false">Figtree</button>
         <button data-font="-apple-system" aria-pressed="false">SF (ref only)</button>
       </div>
     </div>
@@ -176,7 +177,7 @@
   const W = 454;
   const S = W / 390;
   const DIM = '#6e6e73';
-  const state = { font: 'Geist', accent: '#f2f0ea', mode: 'wake', selected: 0 };
+  const state = { font: 'Outfit', accent: '#f2f0ea', mode: 'wake', selected: 0 };
 
   function now() {
     const d = new Date();
@@ -184,7 +185,7 @@
     return {
       HH: String(h).padStart(2, '0'),
       MM: String(d.getMinutes()).padStart(2, '0'),
-      DATE: d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }).toUpperCase().replace(',', ''),
+      DATE: `${['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()]} ${d.getDate()}`,
     };
   }
 
@@ -194,24 +195,24 @@
     {
       name: 'Duo Bold',
       note: 'Hours over minutes, heavy, edge to edge. The loud one. Date tucked under the minutes.',
-      wake: () => [el('HH', 102, 232, 700, { ls: -0.06 }), el('MM', 268, 232, 700, { ls: -0.06 }), el('DATE', 366, 17, 500, { ls: 0.14, color: 'accent' })],
-      aod: () => [el('HH', 102, 232, 200, { ls: -0.04, color: DIM }), el('MM', 268, 232, 200, { ls: -0.04, color: DIM })],
-      wakeText: '232 px digits at weight 700, date at 17 px',
-      aodText: 'Same digits at weight 200, grey, date dropped',
+      wake: () => [el('HH', 98, 196, 700, { ls: -0.06 }), el('MM', 250, 196, 700, { ls: -0.06 }), el('DATE', 360, 18, 500, { ls: 0.14, color: 'accent' })],
+      aod: () => [el('HH', 98, 196, 100, { ls: -0.04 }), el('MM', 250, 196, 100, { ls: -0.04 })],
+      wakeText: '196 px digits at weight 700, date at 17 px',
+      aodText: 'Same digits at weight 100, white, date dropped',
     },
     {
       name: 'Duo Light',
       note: 'Same stack at hairline weight. Closest to the Apple Numerals Duo face. Quiet and expensive.',
-      wake: () => [el('HH', 102, 232, 200, { ls: -0.04 }), el('MM', 268, 232, 200, { ls: -0.04 }), el('DATE', 366, 17, 500, { ls: 0.14, color: 'accent' })],
-      aod: () => [el('HH', 102, 232, 100, { ls: -0.04, color: DIM }), el('MM', 268, 232, 100, { ls: -0.04, color: DIM })],
-      wakeText: '232 px digits at weight 200, date at 17 px',
-      aodText: 'Digits at weight 100, grey',
+      wake: () => [el('HH', 98, 196, 200, { ls: -0.04 }), el('MM', 250, 196, 200, { ls: -0.04 }), el('DATE', 360, 18, 500, { ls: 0.14, color: 'accent' })],
+      aod: () => [el('HH', 98, 196, 100, { ls: -0.04 }), el('MM', 250, 196, 100, { ls: -0.04 })],
+      wakeText: '196 px digits at weight 200, date at 18 px',
+      aodText: 'Digits at weight 100, white',
     },
     {
       name: 'Duo Accent',
       note: 'Bold stack with the minutes in the accent colour. Pick an accent to see it.',
-      wake: () => [el('HH', 102, 232, 700, { ls: -0.06 }), el('MM', 268, 232, 700, { ls: -0.06, color: 'accent' }), el('DATE', 366, 17, 500, { ls: 0.14 })],
-      aod: () => [el('HH', 102, 232, 700, { ls: -0.06, stroke: true }), el('MM', 268, 232, 700, { ls: -0.06, stroke: true, color: 'accent' })],
+      wake: () => [el('HH', 98, 196, 700, { ls: -0.06 }), el('MM', 250, 196, 700, { ls: -0.06, color: 'accent' }), el('DATE', 360, 18, 500, { ls: 0.14 })],
+      aod: () => [el('HH', 98, 196, 700, { ls: -0.06, stroke: true }), el('MM', 250, 196, 700, { ls: -0.06, stroke: true, color: 'accent' })],
       wakeText: 'Hours white, minutes accent, both weight 700',
       aodText: 'Outlined digits only, 2 px stroke',
     },
@@ -219,9 +220,9 @@
       name: 'Inline',
       note: 'One line of time across the middle, date and steps beneath. The most conventional read.',
       wake: () => [el('HH:MM', 178, 126, 600, { ls: -0.05 }), el('DATE', 262, 22, 500, { ls: 0.14, color: 'accent' }), el('6,240 STEPS', 298, 15, 500, { ls: 0.12, color: DIM })],
-      aod: () => [el('HH:MM', 178, 126, 200, { ls: -0.03, color: DIM })],
+      aod: () => [el('HH:MM', 178, 126, 100, { ls: -0.03 })],
       wakeText: '126 px time, date at 22 px, steps at 15 px (example value)',
-      aodText: 'Time at weight 200, grey',
+      aodText: 'Time at weight 100, white',
     },
     {
       name: 'Tiles',
@@ -232,9 +233,9 @@
         el('6.2K', 312, 30, 600, { x: 195, color: 'accent' }), el('STEPS', 338, 12, 500, { x: 195, ls: 0.14, color: DIM }),
         el('84%', 312, 30, 600, { x: 280, color: 'accent' }), el('BATT', 338, 12, 500, { x: 280, ls: 0.14, color: DIM }),
       ],
-      aod: () => [el('HH', 82, 168, 200, { ls: -0.03, color: DIM }), el('MM', 208, 168, 200, { ls: -0.03, color: DIM })],
+      aod: () => [el('HH', 82, 168, 100, { ls: -0.03 }), el('MM', 208, 168, 100, { ls: -0.03 })],
       wakeText: '168 px digits at weight 600, three 30 px readouts (example values)',
-      aodText: 'Digits at weight 200, grey, tiles dropped',
+      aodText: 'Digits at weight 100, white, tiles dropped',
     },
   ];
 
