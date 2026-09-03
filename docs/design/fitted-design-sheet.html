@@ -1,0 +1,337 @@
+<title>Fitted</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400;500&family=Outfit:wght@100..900&family=Manrope:wght@200..800&display=swap">
+<style>
+  :root {
+    --bg: #f3f2ee;
+    --surface: #ffffff;
+    --line: #dedcd5;
+    --text: #17171a;
+    --muted: #6b6a66;
+    --accent: #c98a2b;
+    --ok: #2f8f5b;
+    --warn: #c8531f;
+    --W: 454px;
+    --watch: 534px;
+    --bezel: #1a1a1c;
+    --bezel-edge: #3a3a3e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0b0c;
+      --surface: #141416;
+      --line: #26262a;
+      --text: #ecebe6;
+      --muted: #8b8a85;
+      --accent: #e8a33d;
+      --ok: #4cc38a;
+      --warn: #f0804a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0b0c;
+    --surface: #141416;
+    --line: #26262a;
+    --text: #ecebe6;
+    --muted: #8b8a85;
+    --accent: #e8a33d;
+    --ok: #4cc38a;
+    --warn: #f0804a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Geist", -apple-system, "SF Pro Text", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+  header p { margin: 0; color: var(--muted); max-width: 60ch; }
+  .mono { font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: center; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 32px; }
+  .control { display: flex; align-items: center; gap: 10px; }
+  .control > span { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: transparent; border: 0; color: var(--text); font: inherit; font-size: 13px; padding: 6px 12px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+  .seg button:focus-visible, .swatch:focus-visible, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .swatches { display: inline-flex; gap: 8px; }
+  .swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+  .swatch[aria-pressed="true"] { border-color: var(--text); }
+
+  .stage { display: grid; grid-template-columns: var(--watch) 1fr; gap: 40px; align-items: center; margin-bottom: 40px; }
+  .stage .watch-box { width: var(--watch); height: var(--watch); }
+  .stage h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; }
+  .stage .note { color: var(--muted); margin: 0 0 20px; max-width: 48ch; }
+  .spec { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 14px; }
+  .spec dt { color: var(--muted); }
+  .spec dd { margin: 0; }
+  .load { display: inline-flex; align-items: center; gap: 8px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .pill.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .pill.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 56px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 16px 14px; cursor: pointer; text-align: left; color: inherit; font: inherit; display: flex; flex-direction: column; gap: 10px; }
+  .card[aria-pressed="true"] { border-color: var(--text); }
+  .card .thumb { width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+  .card .thumb .watch-box { width: 240px; height: 240px; }
+  .card .thumb .watch { transform: scale(0.4494); transform-origin: top left; }
+  .card h3 { margin: 0; font-size: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: baseline; }
+  .card h3 .k { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .card p { margin: 0; color: var(--muted); font-size: 13px; }
+  .card .stat { font-size: 12px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+
+  .watch-box { position: relative; }
+  .watch { width: var(--watch); height: var(--watch); border-radius: 50%; position: relative; background: radial-gradient(circle at 50% 50%, var(--bezel) 0 42%, var(--bezel-edge) 42.5%, #0e0e10 47%, #2b2b2e 49%, #111 50%); box-shadow: 0 30px 60px rgba(0,0,0,0.35); }
+  .screen { position: absolute; left: 40px; top: 40px; width: var(--W); height: var(--W); border-radius: 50%; background: #000; overflow: hidden; }
+  .el { position: absolute; left: 0; width: 100%; text-align: center; line-height: 1; white-space: nowrap; transform: translateY(-50%); font-variant-numeric: tabular-nums; }
+  .el.x { width: auto; transform: translate(-50%, -50%); }
+  .bezel-label { position: absolute; font-size: 8px; letter-spacing: 0.18em; color: #6d6d72; font-weight: 500; }
+
+  .funnel { border-top: 1px solid var(--line); padding-top: 28px; }
+  .funnel h2 { font-size: 18px; font-weight: 600; margin: 0 0 16px; }
+  .funnel ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; counter-reset: step; }
+  .funnel li { counter-increment: step; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 13px; }
+  .funnel li::before { content: counter(step); display: block; font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+  .funnel li strong { display: block; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+  .funnel li span { color: var(--muted); }
+  .funnel li.now { border-color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .stage { grid-template-columns: 1fr; }
+    .stage .watch-box { width: 100%; max-width: var(--watch); aspect-ratio: 1; height: auto; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .card { transition: border-color 120ms ease; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Fitted</h1>
+    <p>Five typographic faces for the Forerunner 965, drawn at its real 454 px. Numbers are live. Always-on is measured against Garmin's 10% rule.</p>
+  </header>
+
+  <div class="controls">
+    <div class="control"><span>Type</span>
+      <div class="seg" id="fontSeg">
+        <button data-font="Geist" aria-pressed="true">Geist</button>
+        <button data-font="Outfit" aria-pressed="false">Outfit</button>
+        <button data-font="Manrope" aria-pressed="false">Manrope</button>
+        <button data-font="-apple-system" aria-pressed="false">SF (ref only)</button>
+      </div>
+    </div>
+    <div class="control"><span>Accent</span>
+      <div class="swatches" id="accentSeg">
+        <button class="swatch" data-accent="#f2f0ea" style="background:#f2f0ea" aria-pressed="true" title="Paper"></button>
+        <button class="swatch" data-accent="#f5a524" style="background:#f5a524" aria-pressed="false" title="Amber"></button>
+        <button class="swatch" data-accent="#34d399" style="background:#34d399" aria-pressed="false" title="Mint"></button>
+        <button class="swatch" data-accent="#7dd3fc" style="background:#7dd3fc" aria-pressed="false" title="Ice"></button>
+      </div>
+    </div>
+    <div class="control"><span>State</span>
+      <div class="seg" id="modeSeg">
+        <button data-mode="wake" aria-pressed="true">Wake</button>
+        <button data-mode="aod" aria-pressed="false">Always-on</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="stage">
+    <div class="watch-box" id="bigWatch"></div>
+    <div>
+      <h2 id="bigName"></h2>
+      <p class="note" id="bigNote"></p>
+      <dl class="spec">
+        <dt>Wake</dt><dd id="bigWake"></dd>
+        <dt>Always-on</dt><dd id="bigAod"></dd>
+        <dt>AOD load</dt><dd class="load"><span class="mono" id="bigLoad">measuring</span><span class="pill ok" id="bigPill">under 10%</span></dd>
+        <dt>Targets</dt><dd>Forerunner 965 first. Same layout scales to the 265, 165, Venu 3 and epix later.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+
+  <section class="funnel">
+    <h2>What happens after you pick</h2>
+    <ol>
+      <li class="now"><strong>Pick a face</strong><span>Name the variant, type, and accent.</span></li>
+      <li><strong>Garmin developer account</strong><span>Sign in at developer.garmin.com with your Garmin Connect login and install the SDK Manager. Free.</span></li>
+      <li><strong>Build</strong><span>Monkey C project, bitmap fonts cut from the chosen typeface, wake and always-on layouts, built for the Forerunner 965.</span></li>
+      <li><strong>Sideload and check</strong><span>Copy the .prg over USB, wear it a day, confirm always-on on the wrist.</span></li>
+      <li><strong>Publish</strong><span>Free listing on apps.garmin.com. Review takes about two business days.</span></li>
+    </ol>
+  </section>
+</div>
+
+<script>
+  const W = 454;
+  const S = W / 390;
+  const DIM = '#6e6e73';
+  const state = { font: 'Geist', accent: '#f2f0ea', mode: 'wake', selected: 0 };
+
+  function now() {
+    const d = new Date();
+    const h = d.getHours() % 12 || 12;
+    return {
+      HH: String(h).padStart(2, '0'),
+      MM: String(d.getMinutes()).padStart(2, '0'),
+      DATE: d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }).toUpperCase().replace(',', ''),
+    };
+  }
+
+  const el = (t, y, size, w, o = {}) => ({ t, y, size, w, ...o });
+
+  const VARIANTS = [
+    {
+      name: 'Duo Bold',
+      note: 'Hours over minutes, heavy, edge to edge. The loud one. Date tucked under the minutes.',
+      wake: () => [el('HH', 102, 232, 700, { ls: -0.06 }), el('MM', 268, 232, 700, { ls: -0.06 }), el('DATE', 366, 17, 500, { ls: 0.14, color: 'accent' })],
+      aod: () => [el('HH', 102, 232, 200, { ls: -0.04, color: DIM }), el('MM', 268, 232, 200, { ls: -0.04, color: DIM })],
+      wakeText: '232 px digits at weight 700, date at 17 px',
+      aodText: 'Same digits at weight 200, grey, date dropped',
+    },
+    {
+      name: 'Duo Light',
+      note: 'Same stack at hairline weight. Closest to the Apple Numerals Duo face. Quiet and expensive.',
+      wake: () => [el('HH', 102, 232, 200, { ls: -0.04 }), el('MM', 268, 232, 200, { ls: -0.04 }), el('DATE', 366, 17, 500, { ls: 0.14, color: 'accent' })],
+      aod: () => [el('HH', 102, 232, 100, { ls: -0.04, color: DIM }), el('MM', 268, 232, 100, { ls: -0.04, color: DIM })],
+      wakeText: '232 px digits at weight 200, date at 17 px',
+      aodText: 'Digits at weight 100, grey',
+    },
+    {
+      name: 'Duo Accent',
+      note: 'Bold stack with the minutes in the accent colour. Pick an accent to see it.',
+      wake: () => [el('HH', 102, 232, 700, { ls: -0.06 }), el('MM', 268, 232, 700, { ls: -0.06, color: 'accent' }), el('DATE', 366, 17, 500, { ls: 0.14 })],
+      aod: () => [el('HH', 102, 232, 700, { ls: -0.06, stroke: true }), el('MM', 268, 232, 700, { ls: -0.06, stroke: true, color: 'accent' })],
+      wakeText: 'Hours white, minutes accent, both weight 700',
+      aodText: 'Outlined digits only, 2 px stroke',
+    },
+    {
+      name: 'Inline',
+      note: 'One line of time across the middle, date and steps beneath. The most conventional read.',
+      wake: () => [el('HH:MM', 178, 126, 600, { ls: -0.05 }), el('DATE', 262, 22, 500, { ls: 0.14, color: 'accent' }), el('6,240 STEPS', 298, 15, 500, { ls: 0.12, color: DIM })],
+      aod: () => [el('HH:MM', 178, 126, 200, { ls: -0.03, color: DIM })],
+      wakeText: '126 px time, date at 22 px, steps at 15 px (example value)',
+      aodText: 'Time at weight 200, grey',
+    },
+    {
+      name: 'Tiles',
+      note: 'Stack pushed up, three small readouts along the bottom. The most information, still all type.',
+      wake: () => [
+        el('HH', 82, 168, 600, { ls: -0.05 }), el('MM', 208, 168, 600, { ls: -0.05 }),
+        el('72', 312, 30, 600, { x: 110, color: 'accent' }), el('BPM', 338, 12, 500, { x: 110, ls: 0.14, color: DIM }),
+        el('6.2K', 312, 30, 600, { x: 195, color: 'accent' }), el('STEPS', 338, 12, 500, { x: 195, ls: 0.14, color: DIM }),
+        el('84%', 312, 30, 600, { x: 280, color: 'accent' }), el('BATT', 338, 12, 500, { x: 280, ls: 0.14, color: DIM }),
+      ],
+      aod: () => [el('HH', 82, 168, 200, { ls: -0.03, color: DIM }), el('MM', 208, 168, 200, { ls: -0.03, color: DIM })],
+      wakeText: '168 px digits at weight 600, three 30 px readouts (example values)',
+      aodText: 'Digits at weight 200, grey, tiles dropped',
+    },
+  ];
+
+  const fill = (t) => { const n = now(); return t.replace('HH', n.HH).replace('MM', n.MM).replace('DATE', n.DATE); };
+  const family = () => state.font === '-apple-system' ? '-apple-system, "SF Pro Display", system-ui, sans-serif' : `"${state.font}", -apple-system, system-ui, sans-serif`;
+  const color = (c) => c === 'accent' ? state.accent : (c || '#ffffff');
+
+  function renderWatch(box, variant) {
+    const spec = (state.mode === 'aod' ? variant.aod : variant.wake)();
+    const labels = [['LIGHT', 'left:8px;top:120px;transform:rotate(-60deg)'], ['UP', 'left:14px;top:230px;transform:rotate(-90deg)'], ['DOWN', 'left:8px;top:330px;transform:rotate(-120deg)'], ['START·STOP', 'right:0px;top:150px;transform:rotate(60deg)'], ['BACK', 'right:12px;top:330px;transform:rotate(120deg)']];
+    box.innerHTML = `<div class="watch">${labels.map(([t, s]) => `<span class="bezel-label" style="${s}">${t}</span>`).join('')}<div class="screen">${spec.map(e => {
+      const st = [`top:${e.y * S}px`, `font-size:${e.size * S}px`, `font-weight:${e.w}`, `font-family:${family()}`, `letter-spacing:${e.ls || 0}em`];
+      if (e.stroke) st.push('color:transparent', `-webkit-text-stroke:${Math.round(2 * S)}px ${color(e.color)}`); else st.push(`color:${color(e.color)}`);
+      if (e.x) st.push(`left:${e.x * S}px`);
+      return `<div class="el${e.x ? ' x' : ''}" style="${st.join(';')}">${fill(e.t)}</div>`;
+    }).join('')}</div></div>`;
+  }
+
+  async function measureAod(variant) {
+    const spec = variant.aod();
+    await Promise.all(spec.map(e => document.fonts.load(`${e.w} ${e.size * S}px ${family()}`).catch(() => {})));
+    const c = document.createElement('canvas'); c.width = W; c.height = W;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, W);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const e of spec) {
+      ctx.font = `${e.w} ${e.size * S}px ${family()}`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = `${(e.ls || 0) * e.size * S}px`;
+      const x = e.x ? e.x * S : W / 2;
+      const y = e.y * S;
+      if (e.stroke) { ctx.strokeStyle = color(e.color); ctx.lineWidth = Math.round(2 * S); ctx.strokeText(fill(e.t), x, y); }
+      else { ctx.fillStyle = color(e.color); ctx.fillText(fill(e.t), x, y); }
+    }
+    const d = ctx.getImageData(0, 0, W, W).data;
+    let lit = 0, lum = 0, inside = 0;
+    const r = W / 2;
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      if ((x - r) ** 2 + (y - r) ** 2 > r * r) continue;
+      inside++;
+      const i = (y * W + x) * 4;
+      const l = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+      if (l > 8) lit++;
+      lum += l / 255;
+    }
+    return { px: 100 * lit / inside, lum: 100 * lum / inside };
+  }
+
+  const grid = document.getElementById('grid');
+  function renderAll() {
+    grid.innerHTML = '';
+    VARIANTS.forEach((v, i) => {
+      const card = document.createElement('button');
+      card.className = 'card';
+      card.setAttribute('aria-pressed', String(i === state.selected));
+      card.innerHTML = `<div class="thumb"><div class="watch-box"></div></div><h3>${v.name}<span class="k">${i + 1}</span></h3><p>${v.note}</p><div class="stat">AOD load <span class="mono" data-load>measuring</span></div>`;
+      card.addEventListener('click', () => { state.selected = i; renderAll(); });
+      renderWatch(card.querySelector('.watch-box'), v);
+      grid.appendChild(card);
+      measureAod(v).then(m => {
+        const s = card.querySelector('[data-load]');
+        s.textContent = `${m.px.toFixed(1)}% px · ${m.lum.toFixed(1)}% lum`;
+        s.style.color = m.px > 10 ? 'var(--warn)' : 'var(--ok)';
+      });
+    });
+    const v = VARIANTS[state.selected];
+    renderWatch(document.getElementById('bigWatch'), v);
+    document.getElementById('bigName').textContent = `${state.selected + 1} · ${v.name}`;
+    document.getElementById('bigNote').textContent = v.note;
+    document.getElementById('bigWake').textContent = v.wakeText;
+    document.getElementById('bigAod').textContent = v.aodText;
+    measureAod(v).then(m => {
+      document.getElementById('bigLoad').textContent = `${m.px.toFixed(1)}% of pixels lit · ${m.lum.toFixed(1)}% luminance`;
+      const p = document.getElementById('bigPill');
+      p.className = 'pill ' + (m.px > 10 ? 'warn' : 'ok');
+      p.textContent = m.px > 10 ? 'over the 10% cap' : 'under the 10% cap';
+    });
+  }
+
+  function seg(id, key, attr) {
+    const root = document.getElementById(id);
+    root.addEventListener('click', (ev) => {
+      const b = ev.target.closest('button'); if (!b) return;
+      state[key] = b.dataset[attr];
+      root.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      renderAll();
+    });
+  }
+  seg('fontSeg', 'font', 'font');
+  seg('accentSeg', 'accent', 'accent');
+  seg('modeSeg', 'mode', 'mode');
+  document.addEventListener('keydown', (e) => {
+    const n = Number(e.key);
+    if (n >= 1 && n <= VARIANTS.length) { state.selected = n - 1; renderAll(); }
+    if (e.key === 'a') { state.mode = state.mode === 'aod' ? 'wake' : 'aod'; document.querySelectorAll('#modeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode))); renderAll(); }
+  });
+
+  renderAll();
+  document.fonts.ready.then(renderAll);
+  setInterval(renderAll, 60000);
+</script>

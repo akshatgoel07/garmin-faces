@@ -1,0 +1,15 @@
+# Connect IQ build output
+bin/
+*.prg
+*.prg.debug.xml
+*.iq
+
+# developer key never lives here
+*.der
+*.pem
+developer_key*
+
+# editors and os
+.vscode/
+.DS_Store
+node_modules/
