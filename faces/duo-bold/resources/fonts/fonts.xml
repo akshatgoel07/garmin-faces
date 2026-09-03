@@ -1,0 +1,5 @@
+<fonts>
+    <font id="digits_bold" filename="digits_bold.fnt" filter="0123456789" antialias="true"/>
+    <font id="digits_thin" filename="digits_thin.fnt" filter="0123456789" antialias="true"/>
+    <font id="date" filename="date.fnt" filter="0123456789 ADEFHIMNORSTUW" antialias="true"/>
+</fonts>
