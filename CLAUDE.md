@@ -16,6 +16,7 @@ All prose in this repo (README, docs, commit messages, PRs) follows the voice gu
 
 ## Skills
 
+- `garmin-new-face` to take a new face from idea to store-ready. Start here for any new face.
 - `garmin-face` for building, simulator driving, fonts, device limits, and scaffolding a new face.
 - `garmin-publish` for the store checklist and pricing facts.
 
