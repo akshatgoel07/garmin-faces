@@ -98,14 +98,17 @@
     g.strokeStyle = color; g.lineWidth = w; g.lineCap = 'round';
     g.beginPath(); g.moveTo(x, y); g.lineTo(x + len * Math.cos(rad(deg)), y + len * Math.sin(rad(deg))); g.stroke();
   }
+  var DPR = Math.min(window.devicePixelRatio || 1, 3);
+  ['dark', 'light', 'aod'].forEach(function (id) { var c = document.getElementById(id); c.width = c.height = 454 * DPR; });
   function draw(id, theme) {
     var g = document.getElementById(id).getContext('2d'), t = now(), aod = theme === 'aod';
+    g.setTransform(DPR, 0, 0, DPR, 0, 0);
     var light = theme === 'light', ink = light && !aod ? '#111' : '#f2f2f2', paper = aod ? '#000' : light ? '#e8e8e0' : '#101010';
     var dx = 0, dy = 0;
     if (aod) { dx = t.m % 4 < 2 ? 0 : 3; dy = t.m % 2 === 0 ? 0 : 3; }
     var cx = C + dx, cy = C + dy, sec = aod ? 0 : t.s;
     g.clearRect(0, 0, 454, 454);
-    g.drawImage(img[aod ? 'dial_aod' : light ? 'dial_light' : 'dial_dark'], dx, dy);
+    g.drawImage(img[aod ? 'dial_aod' : light ? 'dial_light' : 'dial_dark'], dx, dy, 454, 454);
     var hw = aod ? 1 : 2;
     ray(g, SUB[0][0] + dx, SUB[0][1] + dy, t.steps * 360, 43, hw, ink);
     ray(g, SUB[0][0] + dx, SUB[0][1] + dy, t.batt * 360, 43, hw, RED);
@@ -120,7 +123,7 @@
     ray(g, cx, cy, (t.h % 12 + t.m / 60) * 30, 124, aod ? 2 : 8, BLUE);
     ray(g, cx, cy, (t.m + sec / 60) * 6, 198, aod ? 2 : 4, ink);
     if (aod) { g.beginPath(); g.arc(cx, cy, 27, 0, 7); g.fillStyle = '#000'; g.fill(); }
-    g.save(); g.translate(cx, cy); g.rotate(sec * 6 * Math.PI / 180); g.drawImage(img[aod ? 'disc_aod' : 'disc'], -68, -68); g.restore();
+    g.save(); g.translate(cx, cy); g.rotate(sec * 6 * Math.PI / 180); g.drawImage(img[aod ? 'disc_aod' : 'disc'], -68, -68, 136, 136); g.restore();
     var px = 338 + dx, py = 293 + dy;
     g.beginPath(); g.roundRect(px - 20.5, py - 14, 41, 28, 14);
     if (aod) { g.strokeStyle = '#8a8a8a'; g.lineWidth = 1; g.stroke(); }
@@ -131,8 +134,9 @@
     g.fillStyle = aod ? ink : light ? '#f2f2f2' : '#111'; g.font = '500 20px Outfit, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(String(t.day), px, py + 1);
     if (aod) {
-      var d = g.getImageData(0, 0, 454, 454).data, n = 0;
+      var d = g.getImageData(0, 0, 454 * DPR, 454 * DPR).data, n = 0;
       for (var i = 0; i < d.length; i += 4) if (d[i] | d[i + 1] | d[i + 2]) n++;
+      n = Math.round(n / (DPR * DPR));
       document.getElementById('pix').innerHTML = (100 * n / (454 * 454)).toFixed(1) + '% <small>of pixels lit, ' + n.toLocaleString() + ' of 206,116; Garmin allows 10%</small>';
     }
   }

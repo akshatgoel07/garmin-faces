@@ -14,6 +14,7 @@ import Toybox.WatchUi;
 class TrioChronoView extends WatchUi.WatchFace {
     private const C = 227;
     private const DISC_HALF = 68;
+    private const DISC_SRC_HALF = 136;   // the disc bitmap is 2x, scaled down as it turns
     private const HOUR_LEN = 124;
     private const HOUR_HALF = 4;
     private const MIN_LEN = 198;
@@ -121,7 +122,8 @@ class TrioChronoView extends WatchUi.WatchFace {
         var t = new Graphics.AffineTransform();
         t.translate(DISC_HALF.toFloat(), DISC_HALF.toFloat());
         t.rotate(Math.toRadians(sec * 6.0));
-        t.translate(-DISC_HALF.toFloat(), -DISC_HALF.toFloat());
+        t.scale(0.5, 0.5);
+        t.translate(-DISC_SRC_HALF.toFloat(), -DISC_SRC_HALF.toFloat());
         dc.drawBitmap2(cx - DISC_HALF, cy - DISC_HALF, (_lowPower ? _discAod : _disc) as BitmapType,
             {:transform => t, :filterMode => Graphics.FILTER_MODE_BILINEAR});
 

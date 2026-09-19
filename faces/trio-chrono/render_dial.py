@@ -2,14 +2,17 @@
 """Render the static art for Trio Chrono at 454 px.
 
 Writes into resources/drawables/: the dial for the dark, light and
-always-on themes, the green seconds disc (full and outline), and the
-launcher icon. Also writes docs/store/trio-chrono/icon-500.png.
+always-on themes, the green seconds disc (full and outline) at 2x so the
+watch can rotate it without going soft, and the launcher icon. Also
+writes docs/store/trio-chrono/icon-500.png.
 
 Run from the repo root:
   python3 faces/trio-chrono/render_dial.py
+  python3 faces/trio-chrono/render_dial.py --preview DIR   # 2x art for the design sheet
 """
 import math
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -124,7 +127,7 @@ def triangle(d, tip, base_c, half_w, fill=None, outline=None, width=1):
         d.line(pts + [pts[0]], fill=outline, width=round(width * S), joint="curve")
 
 
-def render_dial(theme):
+def render_dial(theme, scale=1):
     t = THEMES[theme]
     img = Image.new("RGBA", (W * S, W * S), t["bg"] + (255,))
     d = ImageDraw.Draw(img)
@@ -180,10 +183,10 @@ def render_dial(theme):
         for text, b, r in sd["inner"]:
             label(img, text, pol(*sc, b, r * R), upright(b), 19, t["text"])
 
-    return img.resize((W, W), Image.LANCZOS)
+    return img.resize((W * scale, W * scale), Image.LANCZOS)
 
 
-def render_disc(outline_only):
+def render_disc(outline_only, scale=2):
     """the green seconds disc, numbers running anticlockwise so the disc turns clockwise"""
     D = 136
     cx = cy = D / 2
@@ -205,13 +208,13 @@ def render_disc(outline_only):
         label(img, str(10 * k), pol(cx, cy, b, 33), b, 22, white)
     if not outline_only:
         circle(d, (cx, cy), 27, fill=(0, 0, 0))
-    return img.resize((D, D), Image.LANCZOS)
+    return img.resize((D * scale, D * scale), Image.LANCZOS)
 
 
 def render_icon(size):
     """dark dial centre with the green disc, cropped to a circle"""
     dial = render_dial("dark")
-    disc = render_disc(False)
+    disc = render_disc(False, 1)
     dial.alpha_composite(disc, (round(R - disc.width / 2), round(R - disc.height / 2)))
     crop = 150
     icon = dial.crop((round(R - crop), round(R - crop), round(R + crop), round(R + crop))).resize((size * S, size * S), Image.LANCZOS)
@@ -230,7 +233,24 @@ def lit_pixels(img):
     return sum(1 for p in img.convert("RGB").getdata() if max(p) > 0)
 
 
+def aod_disc(scale):
+    disc = render_disc(True, scale)
+    disc.putalpha(disc.split()[3].point(lambda v: 0 if v < 64 else v))
+    return disc
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--preview":
+        out = sys.argv[2]
+        os.makedirs(out, exist_ok=True)
+        for theme in THEMES:
+            img = render_dial(theme, 2)
+            if theme == "aod":
+                img = snap_dark(img)
+            img.convert("RGB").save(os.path.join(out, "dial_%s.png" % theme))
+        render_disc(False).save(os.path.join(out, "disc.png"))
+        aod_disc(2).save(os.path.join(out, "disc_aod.png"))
+        return
     os.makedirs(OUT, exist_ok=True)
     for theme in THEMES:
         img = render_dial(theme)
@@ -239,11 +259,9 @@ def main():
         img.convert("RGB").save(os.path.join(OUT, "dial_%s.png" % theme))
         print("dial_%s.png lit pixels %d (%.1f%%)" % (theme, lit_pixels(img), 100 * lit_pixels(img) / (W * W)))
     render_disc(False).save(os.path.join(OUT, "disc.png"))
-    disc = render_disc(True)
-    a = disc.split()[3].point(lambda v: 0 if v < 64 else v)
-    disc.putalpha(a)
+    disc = aod_disc(2)
     disc.save(os.path.join(OUT, "disc_aod.png"))
-    print("disc_aod.png lit pixels %d" % lit_pixels(disc))
+    print("disc_aod.png lit pixels at 1x %d" % lit_pixels(aod_disc(1)))
     render_icon(65).save(os.path.join(OUT, "launcher_icon.png"))
     store = os.path.join(ROOT, "docs", "store", "trio-chrono")
     os.makedirs(store, exist_ok=True)
