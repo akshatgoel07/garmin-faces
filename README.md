@@ -2,7 +2,7 @@
 
 Watch faces for Garmin AMOLED watches, written in Monkey C for the Connect IQ store.
 
-First target is the Forerunner 965 (454 x 454 AMOLED). The first face is a typographic one: big fitted digits, a premium sans, nothing else.
+First target is the Forerunner 965 (454 x 454 AMOLED). The first face is a typographic one: big fitted digits, a premium sans, nothing else. The second is an analogue chronograph dial with three subdials and a turning seconds disc.
 
 ## Layout
 

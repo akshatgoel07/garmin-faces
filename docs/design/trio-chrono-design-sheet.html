@@ -1,0 +1,143 @@
+<title>Trio Chrono</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #ebe9e3; --ink: #141414; --muted: #6b6a66; --rule: #cfcdc6; --card: #f6f5f1;
+    --green: #056a2e; --yellow: #f5b300; --red: #e33a1e; --blue: #1148c4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121212; --ink: #f0efea; --muted: #9a9993; --rule: #2c2c2c; --card: #1a1a1a; }
+  }
+  :root[data-theme="dark"] { --bg: #121212; --ink: #f0efea; --muted: #9a9993; --rule: #2c2c2c; --card: #1a1a1a; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.5 Outfit, system-ui, sans-serif; padding-block: 32px; padding-inline: 16px; }
+  main { max-width: 1480px; margin: 0 auto; }
+  h1 { font-size: 30px; font-weight: 600; margin: 0 0 4px; text-wrap: balance; }
+  h2 { font-size: 15px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
+  p.lede { max-width: 62ch; color: var(--muted); margin: 0 0 28px; }
+  .faces { display: flex; flex-wrap: wrap; gap: 28px; margin-bottom: 40px; }
+  figure { margin: 0; flex: 1 1 454px; max-width: 100%; }
+  canvas { width: 100%; max-width: 454px; aspect-ratio: 1; border-radius: 50%; display: block; background: #000; }
+  figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+  figcaption b { color: var(--ink); font-weight: 500; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 14px; }
+  td, th { text-align: left; padding: 6px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 500; color: var(--muted); }
+  td:last-child, th:last-child { text-align: right; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; border: 1px solid var(--rule); }
+  .aod { font-size: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .aod small { font-size: 14px; font-weight: 400; color: var(--muted); }
+  label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 14px; }
+</style>
+<main>
+  <h1>Trio Chrono</h1>
+  <p class="lede">Forerunner 965, 454 px. The static dial is a bitmap from <code>render_dial.py</code>; the hands, the seconds disc and the date are drawn live, here in JavaScript and on the watch in Monkey C, from the same numbers. Time is live. <label><input type="checkbox" id="pause"> hold at 10:37:08</label></p>
+
+  <div class="faces">
+    <figure><canvas id="dark" width="454" height="454"></canvas><figcaption><b>Black dial</b>, the default. Wake mode, updates every second.</figcaption></figure>
+    <figure><canvas id="light" width="454" height="454"></canvas><figcaption><b>White dial</b>, a setting. Same geometry, inverted ink.</figcaption></figure>
+    <figure><canvas id="aod" width="454" height="454"></canvas><figcaption><b>Always-on</b>, both dials fall back to this. Lines only, thin hands, disc as an outline, nudged 3 px every other minute.<br><span class="aod" id="pix">…</span></figcaption></figure>
+  </div>
+
+  <div class="cols">
+    <section>
+      <h2>Layout, fractions of the 227 px radius</h2>
+      <table>
+        <tr><th>Element</th><th>Where</th></tr>
+        <tr><td>Rim minute ticks</td><td>0.886 to 0.926</td></tr>
+        <tr><td>Cell dividers, twelve</td><td>0.61 to 0.96 at 15° + 30°k</td></tr>
+        <tr><td>Cardinal numerals</td><td>0.80, 28 px, filled triangle 0.905 to 0.945</td></tr>
+        <tr><td>Five-minute numerals</td><td>0.93, 19 px, outline triangle at 0.875</td></tr>
+        <tr><td>Inner circle</td><td>0.61</td></tr>
+        <tr><td>Yellow pointer</td><td>0.51 down to 0.29, 24 px wide</td></tr>
+        <tr><td>Subdial centres</td><td>(±0.31, −0.16) and (0, 0.37)</td></tr>
+        <tr><td>Subdial disc, band, labels, arc</td><td>0.185, 0.275, 0.322, 0.325</td></tr>
+        <tr><td>Seconds disc</td><td>66 px, black centre 27 px, numerals at 33 px</td></tr>
+        <tr><td>Hour and minute hands</td><td>124 × 8 px, 198 × 4 px</td></tr>
+        <tr><td>Subdial hands</td><td>43 px, pivot 10 px</td></tr>
+        <tr><td>Date pill</td><td>centre (338, 293), 41 × 28 px</td></tr>
+      </table>
+    </section>
+    <section>
+      <h2>Colour</h2>
+      <table>
+        <tr><td><span class="swatch" style="background:#056a2e"></span>green disc</td><td>#056A2E</td></tr>
+        <tr><td><span class="swatch" style="background:#f5b300"></span>yellow pointer</td><td>#F5B300</td></tr>
+        <tr><td><span class="swatch" style="background:#e33a1e"></span>red arcs and hands</td><td>#E33A1E</td></tr>
+        <tr><td><span class="swatch" style="background:#1148c4"></span>blue hour hand</td><td>#1148C4</td></tr>
+        <tr><td><span class="swatch" style="background:#101010"></span>black dial</td><td>#101010 on #F2F2F2 ink</td></tr>
+        <tr><td><span class="swatch" style="background:#e8e8e0"></span>white dial</td><td>#E8E8E0 on #111111 ink</td></tr>
+      </table>
+      <h2 style="margin-top:28px">What the hands read</h2>
+      <table>
+        <tr><td>Left subdial</td><td>white: steps against goal, red: battery</td></tr>
+        <tr><td>Right subdial</td><td>white: local time on 24 h, red: UTC</td></tr>
+        <tr><td>Bottom subdial</td><td>red: seconds</td></tr>
+        <tr><td>Green disc</td><td>turns once a minute under the pointer</td></tr>
+      </table>
+    </section>
+  </div>
+</main>
+<script>
+(function () {
+  var ART = location.protocol === 'file:' ? '../../faces/trio-chrono/resources/drawables/' : 'art/';
+  var C = 227, SUB = [[157, 191], [297, 191], [227, 311]];
+  var GREEN = '#056a2e', RED = '#e33a1e', BLUE = '#1148c4';
+  var names = ['dial_dark', 'dial_light', 'dial_aod', 'disc', 'disc_aod'], img = {}, left = names.length;
+  names.forEach(function (n) {
+    var i = new Image(); i.onload = function () { if (--left === 0) tick(); }; i.src = ART + n + '.png'; img[n] = i;
+  });
+  var pause = document.getElementById('pause');
+  function now() {
+    if (pause.checked) return { h: 10, m: 37, s: 8, day: 25, utcH: 5, utcM: 7, steps: 0.62, batt: 0.8 };
+    var d = new Date();
+    return { h: d.getHours(), m: d.getMinutes(), s: d.getSeconds(), day: d.getDate(), utcH: d.getUTCHours(), utcM: d.getUTCMinutes(), steps: 0.62, batt: 0.8 };
+  }
+  function rad(deg) { return (deg - 90) * Math.PI / 180; }
+  function ray(g, x, y, deg, len, w, color) {
+    g.strokeStyle = color; g.lineWidth = w; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + len * Math.cos(rad(deg)), y + len * Math.sin(rad(deg))); g.stroke();
+  }
+  function draw(id, theme) {
+    var g = document.getElementById(id).getContext('2d'), t = now(), aod = theme === 'aod';
+    var light = theme === 'light', ink = light && !aod ? '#111' : '#f2f2f2', paper = aod ? '#000' : light ? '#e8e8e0' : '#101010';
+    var dx = 0, dy = 0;
+    if (aod) { dx = t.m % 4 < 2 ? 0 : 3; dy = t.m % 2 === 0 ? 0 : 3; }
+    var cx = C + dx, cy = C + dy, sec = aod ? 0 : t.s;
+    g.clearRect(0, 0, 454, 454);
+    g.drawImage(img[aod ? 'dial_aod' : light ? 'dial_light' : 'dial_dark'], dx, dy);
+    var hw = aod ? 1 : 2;
+    ray(g, SUB[0][0] + dx, SUB[0][1] + dy, t.steps * 360, 43, hw, ink);
+    ray(g, SUB[0][0] + dx, SUB[0][1] + dy, t.batt * 360, 43, hw, RED);
+    ray(g, SUB[1][0] + dx, SUB[1][1] + dy, (t.h + t.m / 60) * 15 + 180, 43, hw, ink);
+    ray(g, SUB[1][0] + dx, SUB[1][1] + dy, (t.utcH + t.utcM / 60) * 15 + 180, 43, hw, RED);
+    ray(g, SUB[2][0] + dx, SUB[2][1] + dy, sec * 6, 43, hw, RED);
+    SUB.forEach(function (p) {
+      g.beginPath(); g.arc(p[0] + dx, p[1] + dy, 10, 0, 7);
+      if (aod) { g.strokeStyle = ink; g.lineWidth = 1; g.stroke(); return; }
+      g.fillStyle = ink; g.fill(); g.beginPath(); g.arc(p[0] + dx, p[1] + dy, 3, 0, 7); g.fillStyle = paper; g.fill();
+    });
+    ray(g, cx, cy, (t.h % 12 + t.m / 60) * 30, 124, aod ? 2 : 8, BLUE);
+    ray(g, cx, cy, (t.m + sec / 60) * 6, 198, aod ? 2 : 4, ink);
+    if (aod) { g.beginPath(); g.arc(cx, cy, 27, 0, 7); g.fillStyle = '#000'; g.fill(); }
+    g.save(); g.translate(cx, cy); g.rotate(sec * 6 * Math.PI / 180); g.drawImage(img[aod ? 'disc_aod' : 'disc'], -68, -68); g.restore();
+    var px = 338 + dx, py = 293 + dy;
+    g.beginPath(); g.roundRect(px - 20.5, py - 14, 41, 28, 14);
+    if (aod) { g.strokeStyle = '#8a8a8a'; g.lineWidth = 1; g.stroke(); }
+    else {
+      g.fillStyle = light ? '#b5b5b0' : '#454545'; g.fill();
+      g.beginPath(); g.roundRect(px - 18.5, py - 12, 37, 24, 12); g.fillStyle = light ? '#0d0d0d' : '#cfcfcf'; g.fill();
+    }
+    g.fillStyle = aod ? ink : light ? '#f2f2f2' : '#111'; g.font = '500 20px Outfit, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String(t.day), px, py + 1);
+    if (aod) {
+      var d = g.getImageData(0, 0, 454, 454).data, n = 0;
+      for (var i = 0; i < d.length; i += 4) if (d[i] | d[i + 1] | d[i + 2]) n++;
+      document.getElementById('pix').innerHTML = (100 * n / (454 * 454)).toFixed(1) + '% <small>of pixels lit, ' + n.toLocaleString() + ' of 206,116; Garmin allows 10%</small>';
+    }
+  }
+  function tick() { draw('dark', 'dark'); draw('light', 'light'); draw('aod', 'aod'); }
+  setInterval(function () { if (left === 0) tick(); }, 1000);
+  pause.addEventListener('change', tick);
+})();
+</script>
