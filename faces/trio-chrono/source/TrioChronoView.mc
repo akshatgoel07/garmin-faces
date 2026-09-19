@@ -15,28 +15,27 @@ class TrioChronoView extends WatchUi.WatchFace {
     private const C = 227;
     private const DISC_HALF = 68;
     private const DISC_SRC_HALF = 136;   // the disc bitmap is 2x, scaled down as it turns
-    private const HOUR_LEN = 124;
+    private const HOUR_LEN = 128;
     private const HOUR_HALF = 4;
-    private const MIN_LEN = 198;
-    private const MIN_HALF = 2;
+    private const MIN_LEN = 192;
+    private const MIN_HALF = 4;
     private const SUB_LEN = 43;
-    private const SUB_L = [157, 191];
-    private const SUB_R = [297, 191];
-    private const SUB_B = [227, 311];
-    private const DATE_X = 338;
-    private const DATE_Y = 293;
-    private const DATE_W = 41;
-    private const DATE_H = 28;
+    private const SUB_L = [157, 187];
+    private const SUB_R = [297, 187];
+    private const SUB_B = [227, 308];
+    private const DATE_X = 337;
+    private const DATE_Y = 291;
+    private const DATE_W = 52;
+    private const DATE_H = 44;
 
-    private const BLUE = 0x1148C4;
-    private const RED = 0xE33A1E;
-    private const JUSTIFY = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+    private const BLUE = 0x2551BC;
+    private const RED = 0xC8482F;
 
     private var _dial as BitmapType?;
     private var _dialAod as BitmapType?;
     private var _disc as BitmapType?;
     private var _discAod as BitmapType?;
-    private var _date as FontResource?;
+    private var _dates as BitmapType?;
     private var _light as Boolean = false;
     private var _lowPower as Boolean = false;
 
@@ -48,7 +47,7 @@ class TrioChronoView extends WatchUi.WatchFace {
         _dialAod = WatchUi.loadResource(Rez.Drawables.dial_aod) as BitmapType;
         _disc = WatchUi.loadResource(Rez.Drawables.disc) as BitmapType;
         _discAod = WatchUi.loadResource(Rez.Drawables.disc_aod) as BitmapType;
-        _date = WatchUi.loadResource(Rez.Fonts.date) as FontResource;
+        _dates = WatchUi.loadResource(Rez.Drawables.date_numbers) as BitmapType;
         loadTheme();
     }
 
@@ -115,9 +114,9 @@ class TrioChronoView extends WatchUi.WatchFace {
             hand(dc, cx, cy, minAngle, MIN_LEN, MIN_HALF, ink);
         }
         if (_lowPower) {
-            // the outline disc has no fill, so cover the hand roots as the full disc does
+            // Cover the subdial labels and hand roots before drawing the outline disc.
             dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
-            dc.fillCircle(cx, cy, 27);
+            dc.fillCircle(cx, cy, 65);
         }
         var t = new Graphics.AffineTransform();
         t.translate(DISC_HALF.toFloat(), DISC_HALF.toFloat());
@@ -127,26 +126,15 @@ class TrioChronoView extends WatchUi.WatchFace {
         dc.drawBitmap2(cx - DISC_HALF, cy - DISC_HALF, (_lowPower ? _discAod : _disc) as BitmapType,
             {:transform => t, :filterMode => Graphics.FILTER_MODE_BILINEAR});
 
-        // date pill
-        var day = Gregorian.info(Time.now(), Time.FORMAT_SHORT).day.format("%d");
-        var px = DATE_X + dx - DATE_W / 2;
-        var py = DATE_Y + dy - DATE_H / 2;
-        if (_lowPower) {
-            dc.setPenWidth(1);
-            dc.setColor(0x8A8A8A, Graphics.COLOR_TRANSPARENT);
-            dc.drawRoundedRectangle(px, py, DATE_W, DATE_H, DATE_H / 2);
-            dc.setColor(ink, Graphics.COLOR_TRANSPARENT);
-        } else {
-            dc.setColor(_light ? 0xB5B5B0 : 0x454545, Graphics.COLOR_TRANSPARENT);
-            dc.fillRoundedRectangle(px, py, DATE_W, DATE_H, DATE_H / 2);
-            dc.setColor(_light ? 0x0D0D0D : 0xCFCFCF, Graphics.COLOR_TRANSPARENT);
-            dc.fillRoundedRectangle(px + 2, py + 2, DATE_W - 4, DATE_H - 4, DATE_H / 2 - 2);
-            dc.setColor(_light ? 0xF2F2F2 : 0x111111, Graphics.COLOR_TRANSPARENT);
-        }
-        dc.drawText(DATE_X + dx, DATE_Y + dy, _date, day, JUSTIFY);
+        // The surround is baked into the dial; each date uses the same 30 degree tilt.
+        var day = Gregorian.info(Time.now(), Time.FORMAT_SHORT).day;
+        dc.drawOffsetBitmap(DATE_X + dx - DATE_W / 2, DATE_Y + dy - DATE_H / 2,
+            ((day - 1) % 8) * DATE_W,
+            ((day - 1) / 8 + ((_lowPower || _light) ? 4 : 0)) * DATE_H,
+            DATE_W, DATE_H, _dates as BitmapType);
     }
 
-    // a rotated rectangle from (cx, cy) along a clock bearing, with a round tip
+    // A square-ended hand, matching the reference's flat tips.
     private function hand(dc as Dc, cx as Number, cy as Number, deg as Float, len as Number, half as Number, color as Number) as Void {
         var a = Math.toRadians(deg);
         var s = Math.sin(a);
@@ -160,7 +148,6 @@ class TrioChronoView extends WatchUi.WatchFace {
             [tx - half * c, ty - half * s],
             [cx - half * c, cy - half * s]
         ] as Array<Point2D>);
-        dc.fillCircle(tx, ty, half);
     }
 
     private function line(dc as Dc, cx as Number, cy as Number, deg as Float, len as Number) as Void {
@@ -169,7 +156,7 @@ class TrioChronoView extends WatchUi.WatchFace {
     }
 
     private function subHand(dc as Dc, at as Array<Number>, dx as Number, dy as Number, deg as Float, color as Number) as Void {
-        dc.setPenWidth(_lowPower ? 1 : 2);
+        dc.setPenWidth(_lowPower ? 1 : 3);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         line(dc, at[0] + dx, at[1] + dy, deg, SUB_LEN);
     }
@@ -180,11 +167,11 @@ class TrioChronoView extends WatchUi.WatchFace {
         if (_lowPower) {
             dc.setPenWidth(1);
             dc.setColor(ink, Graphics.COLOR_TRANSPARENT);
-            dc.drawCircle(x, y, 10);
+            dc.drawCircle(x, y, 11);
             return;
         }
         dc.setColor(ink, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(x, y, 10);
+        dc.fillCircle(x, y, 11);
         dc.setColor(paper, Graphics.COLOR_TRANSPARENT);
         dc.fillCircle(x, y, 3);
     }

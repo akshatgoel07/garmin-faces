@@ -5,4 +5,5 @@
     <bitmap id="dial_aod" filename="dial_aod.png" packingFormat="png"/>
     <bitmap id="disc" filename="disc.png" packingFormat="png"/>
     <bitmap id="disc_aod" filename="disc_aod.png" packingFormat="png"/>
+    <bitmap id="date_numbers" filename="date_numbers.png" packingFormat="png"/>
 </drawables>
